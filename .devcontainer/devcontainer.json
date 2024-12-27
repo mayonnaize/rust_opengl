@@ -1,0 +1,25 @@
+{
+    "name": "Rust OpenGL Dev Container",
+    "dockerComposeFile": "./docker-compose.yml",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // "ms-vscode.cpptools",
+                // "ms-vscode.cmake-tools",
+                // "ms-vscode.cpptools",
+                // "ms-vscode.cpptools-extension-pack",
+                // "twxs.cmake",
+                "mhutchie.git-graph"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    },
+    "service": "rust_opengl",
+    "mounts": [
+        "source=${localWorkspaceFolder}/,target=/app"
+    ],
+    "workspaceFolder": "/app",
+    "postStartCommand": "/bin/bash"
+}
