@@ -10,7 +10,9 @@
                 // "ms-vscode.cpptools-extension-pack",
                 // "twxs.cmake",
                 "mhutchie.git-graph",
-                "tamasfe.even-better-toml"
+                "tamasfe.even-better-toml",
+                "1YiB.rust-bundle",
+                "JScearcy.rust-doc-viewer"
             ],
             "settings": {
                 "terminal.integrated.defaultProfile.linux": "bash"
