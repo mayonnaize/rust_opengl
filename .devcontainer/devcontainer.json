@@ -21,5 +21,8 @@
         "source=${localWorkspaceFolder}/,target=/app"
     ],
     "workspaceFolder": "/app",
+
+    "initializeCommand": "/bin/bash .devcontainer/scripts/initialize.sh",
+    "postCreateCommand": "/bin/bash .devcontainer/scripts/post-create.sh",
     "postStartCommand": "/bin/bash"
 }

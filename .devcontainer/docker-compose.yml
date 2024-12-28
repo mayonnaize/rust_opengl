@@ -9,15 +9,13 @@ services:
       - /mnt/wslg/.X11-unix:/tmp/.X11-unix
       # Mount the proper locationm for x11 server if you are running this in native linux
       # - /tmp/.X11-unix:/tmp/.X11-unix .
+      - ~/.ssh:/home/user/.ssh
     environment:
       - DISPLAY=:0 # Set DISPLAY environment variable
     user: user
     privileged: true
-    group_add:
-      - plugdev
     network_mode: "host"
-    devices:
-      # Uncomment the previous and next line if you want to pass through USB to the container.
-      - /dev/bus/usb:/dev/bus/usb
+    env_file:
+      - .env
     entrypoint: /bin/bash
     tty: true
