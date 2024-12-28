@@ -26,6 +26,11 @@ RUN sed -i 's/# \(ja_JP.UTF-8 UTF-8\)/\1/' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=ja_JP.UTF-8
 
+# SDL2
+RUN apt-get update && apt-get install -y \
+    libsdl2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 ARG USER=user
 RUN groupadd -g 1000 -r $USER
 RUN useradd -u 1000 -g 1000 --create-home -r $USER
