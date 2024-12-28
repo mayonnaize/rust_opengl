@@ -15,7 +15,16 @@ RUN apt-get update && apt-get install -y \
     python3-wheel \
     git \
     gdb \
+    locales \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG="ja_JP.UTF-8" \
+    LANGUAGE="ja_JP:ja" \
+    LC_ALL="ja_JP.UTF-8"
+
+RUN sed -i 's/# \(ja_JP.UTF-8 UTF-8\)/\1/' /etc/locale.gen \
+    && locale-gen \
+    && update-locale LANG=ja_JP.UTF-8
 
 ARG USER=user
 RUN groupadd -g 1000 -r $USER
