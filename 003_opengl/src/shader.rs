@@ -14,17 +14,23 @@ type Vector3 = cgmath::Vector3<f32>;
 #[allow(dead_code)]
 type Matrix4 = cgmath::Matrix4<f32>;
 
+// 構造体の定義
 pub struct Shader {
     pub id: u32,
 }
 
+// 使用されていないコードに対する警告の無効化
 #[allow(dead_code)]
+// 構造体にメソッドの追加 Rustにclassはないらしい
 impl Shader {
+    // 自動フォーマットの無効化
     #[rustfmt::skip]
+    // main.rsから呼び出される
     pub fn new(vertex_path: &str, fragment_path: &str) -> Shader {
         let mut shader = Shader { id: 0 };
 
         // vertex
+        // * まずそれぞれのシェーダーのファイルから中身を読み込み、C言語と互換性のあるCString型のデータを用意します。
         let mut vertex_file = File::open(vertex_path)
             .unwrap_or_else(|_| panic!("failed to open file: {}", vertex_path));
         let mut fragment_file = File::open(fragment_path)
@@ -33,6 +39,7 @@ impl Shader {
 
         // fragment
         let mut fragment_code = String::new();
+        // string型内にファイル読み込み用のメソッドが存在するっぽい
         vertex_file
             .read_to_string(&mut vertex_code)
             .expect("failed to read vertex shader file");
@@ -47,6 +54,12 @@ impl Shader {
             fragment_code.as_bytes()).unwrap();
 
         unsafe {
+            // オブジェクトファイルを作っているとかそんなん？
+            // *   これをバーテックスシェーダーとフラグメントシェーダーの両方で行います。
+            // * gl::CreateShader()でシェーダーの生成を行い、
+            // * gl::ShaderSource()でソースコードをセットします。
+            // * gl::CompileShader()でシェーダーをコンパイルし、
+            // * shader.check_compile_errors()でコンパイルエラーの確認をします。
             // vertex shader
             let vertex = gl::CreateShader(gl::VERTEX_SHADER);
             gl::ShaderSource(vertex, 1, &cstr_vertex_code.as_ptr(), ptr::null());
@@ -60,13 +73,18 @@ impl Shader {
             shader.check_compile_errors(fragment, "FRAGMENT");
 
             // shader program
+            // * gl::CreateProgram()でシェーダープログラムの生成を行ったら、
             let id = gl::CreateProgram();
+            // * gl::AttachShader()で2つのシェーダーをアタッチ
             gl::AttachShader(id, vertex);
             gl::AttachShader(id, fragment);
+            // * gl::LinkProgram()でそれぞれのシェーダーを実行可能な形式に生成し、
             gl::LinkProgram(id);
+            // * 再びshader.check_compile_errors()でエラーの確認をします。
             shader.check_compile_errors(id, "PROGRAM");
 
             // delete
+            // * 不要になったシェーダーをgl::DeleteShader()で削除
             gl::DeleteShader(vertex);
             gl::DeleteShader(fragment);
 
@@ -80,7 +98,9 @@ impl Shader {
         gl::UseProgram(self.id)
     }
 
+    // * GPUで動作しているシェーダーのプログラムへ、さまざまなデータを送るために使うメソッド
     pub unsafe fn set_bool(&self, name: &CStr, value: bool) {
+        // boolもint扱いっぽい
         gl::Uniform1i(gl::GetUniformLocation(self.id, name.as_ptr()), value as i32);
     }
 
