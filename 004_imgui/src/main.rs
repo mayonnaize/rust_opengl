@@ -70,9 +70,10 @@ fn main() {
         FLOAT_NUM as i32 * mem::size_of::<GLfloat>() as GLsizei,
         VERTEX_NUM as i32,
     );
-
+    // ! Dear ImGui を使用する
     // init imgui
     let mut imgui_context = imgui::Context::create();
+    // 作業内容の保存機能の無効化
     imgui_context.set_ini_filename(None);
 
     // init imgui sdl2
@@ -84,6 +85,7 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
     'running: loop {
         for event in event_pump.poll_iter() {
+            // ! キー入力等のイベント処理はImGuiの処理になるのでそれを無視するよう設定
             imgui_sdl2_context.handle_event(&mut imgui_context, &event);
             if imgui_sdl2_context.ignore_event(&event) {
                 continue;
@@ -140,6 +142,7 @@ fn main() {
 
             vertex.draw();
 
+            // ! ImGuiの描画準備
             imgui_sdl2_context.prepare_frame(
                 imgui_context.io_mut(),
                 &window,
@@ -163,6 +166,24 @@ fn main() {
                         "Mouse Position: ({:.1}, {:.1})",
                         mouse_pos[0], mouse_pos[1]
                     ));
+
+                    // ImGuiのサンプルコードみたいなやつ
+                    // ! プログレスバー
+                    imgui::ProgressBar::new(0.6)
+                        .size([200.0, 20.0])
+                        .overlay_text(im_str!("Progress!"))
+                        .build(&ui);
+
+                    // ! 折れ線グラフ
+                    let arr = [0.6f32, 0.1f32, 1.0f32, 0.5f32, 0.9f32, 0.1f32, 0.2f32];
+                    ui.plot_lines(im_str!("lines"), &arr)
+                        .graph_size([200.0, 40.0])
+                        .build();
+
+                    // ! ヒストグラム
+                    ui.plot_histogram(im_str!("histogram"), &arr)
+                        .graph_size([200.0, 40.0])
+                        .build();
                 });
 
             imgui_sdl2_context.prepare_render(&ui, &window);

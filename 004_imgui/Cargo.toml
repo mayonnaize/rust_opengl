@@ -9,6 +9,9 @@ sdl2 = "0.32.2"
 gl = "0.14.0"
 cgmath = "0.17.0"
 c_str_macro = "1.0.2"
+# https://crates.io/crates/imgui
 imgui = "0.2.1"
+# https://crates.io/crates/imgui-sdl2
 imgui-sdl2 = "0.7.0"
+# https://crates.io/crates/imgui-opengl-renderer
 imgui-opengl-renderer = "0.6.0"
