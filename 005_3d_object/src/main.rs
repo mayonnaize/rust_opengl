@@ -25,8 +25,10 @@ type Matrix4 = cgmath::Matrix4<f32>;
 
 const WINDOW_WIDTH: u32 = 900;
 const WINDOW_HEIGHT: u32 = 480;
+// 頂点の座標情報 [x, y, z]
 const FLOAT_NUM: usize = 3;
-const VERTEX_NUM: usize = 36;
+// 三角形の頂点の数 = 三角形の頂点数 * 一面に使用する三角形の数 * 六面体 = 36
+const VERTEX_NUM: usize = 3 * 2 * 6;
 const BUF_LEN: usize = FLOAT_NUM * VERTEX_NUM;
 
 fn main() {
@@ -56,6 +58,7 @@ fn main() {
     // set buffer
     #[rustfmt::skip]
     let buffer_array: [f32; BUF_LEN] = [
+        // ! 一面につき二枚の三角形
         // 1
         0.0, 0.0, 0.0,
         0.0, 1.0, 0.0,
@@ -158,28 +161,40 @@ fn main() {
         }
 
         unsafe {
+            // ! どのオブジェクトがよりカメラに近いか
+            // VBOデータの順番で描画するかどうか
             if depth_test {
                 gl::Enable(gl::DEPTH_TEST);
             } else {
                 gl::Disable(gl::DEPTH_TEST);
             }
 
+            // ! オブジェクト同士の重なり合わせの時に色の重なり合わせ
             if blend {
                 gl::Enable(gl::BLEND);
+                // ふたつの色や画像を合わせる方法を指定
+                // (描画元, 描画先の計算方法)
+                // ! RGBA = (1-As, 1-As, 1-As, 1-As) ※ As = 描画元のAlpha
                 gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             } else {
                 gl::Disable(gl::BLEND);
             }
 
+            // ! 描画するポリゴンを塗りつぶすか線で描画するか
             if wireframe {
+                // ! (モードを適用する面, 適用方法)
                 gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
             } else {
                 gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
             }
 
+            // ! ポリゴンの表面だけを描画するか両面を描画するか
             if culling {
                 gl::Enable(gl::CULL_FACE);
             } else {
+                // 裏側の描画をオフにする
+                // ! 二つのベクトルの外積の向き
+                // ! = 頂点データが反時計回りになっているのが裏面
                 gl::Disable(gl::CULL_FACE);
             }
 
