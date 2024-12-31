@@ -18,6 +18,8 @@ void main()
 {
     Alpha = uAlpha;
     FragPosition = vec3(uModel * vec4(iPosition, 1.0));
+    // 頂点座標に与えた変換と同じことを法線ベクトルに行う モデル行列の逆転置行列というらしい
+    // 法線ベクトル=Normal Vector
     Normal = mat3(transpose(inverse(uModel))) * iNormal;
     TexCoords = iTexCoords;
     gl_Position = uProjection * uView * vec4(FragPosition, 1.0);

@@ -12,4 +12,6 @@ c_str_macro = "1.0.2"
 imgui = "0.2.1"
 imgui-sdl2 = "0.7.0"
 imgui-opengl-renderer = "0.6.0"
+# https://crates.io/crates/image
+# 画像の読み書き、加工が出来るライブラリ
 image = "0.22.3"

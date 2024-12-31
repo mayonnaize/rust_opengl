@@ -54,8 +54,17 @@ fn main() {
     let _gl_context = window.gl_create_context().unwrap();
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as _);
 
+    // ! 画像の読み込み
     let mut image_manager = ImageManager::new();
-    image_manager.load_image(Path::new("rsc/image/surface.png"), "surface", true);
+    image_manager.load_image(
+        // 画像ファイルパス
+        Path::new("rsc/image/surface.png"),
+        // ID
+        "surface",
+        // 上下反転 なぜいる？
+        //  →画像は左上、3D空間は左下にある
+        true
+    );
 
     let shader = Shader::new("rsc/shader/shader.vs", "rsc/shader/shader.fs");
 
@@ -63,6 +72,7 @@ fn main() {
     #[rustfmt::skip]
     let buffer_array: [f32; BUF_LEN] = [
         // 1
+        // [x, y, z, 法線ベクトル(x, y, z), 法線ベクトルがテクスチャーのどこか=テクスチャー座標(x, y)]
         0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0,
         0.0, 1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0,
         1.0, 1.0, 0.0, 0.0, 0.0, -1.0, 1.0, 0.0,
@@ -122,6 +132,7 @@ fn main() {
         buffer_array.as_ptr() as *const c_void,
         gl::STATIC_DRAW,
         vec![gl::FLOAT, gl::FLOAT, gl::FLOAT],
+        // 頂点座標(3D), 法線ベクトル(3D), テクスチャ座標(2D)
         vec![3, 3, 2],
         (FLOAT_NUM * mem::size_of::<GLfloat>()) as GLsizei,
         VERTEX_NUM as i32,
@@ -313,6 +324,7 @@ fn main() {
                         .build(&ui, &mut camera_z);
                 });
 
+            // デバッグ用にシェーダーのパラメータ化
             imgui::Window::new(im_str!("Light"))
                 .size([300.0, 450.0], imgui::Condition::FirstUseEver)
                 .position([600.0, 10.0], imgui::Condition::FirstUseEver)
