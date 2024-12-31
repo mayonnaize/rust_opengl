@@ -1,3 +1,19 @@
+/*
+    フレームバッファオブジェクト：オフスクリーンレンダリングしてから描画
+    * フレームバッファーオブジェクトを3Dオブジェクトに貼り付けられる
+    * フレームバッファーオブジェクトのテクスチャにシェーダを掛けられる
+       ! = ポストエフェクトが掛けられる
+    複数のバッファがある
+        * カラーバッファー
+        * デプスバッファー
+        * ステンシルバッファー: 描画領域のマスク
+
+    今回の目的はオフスクリーンレンダリングしたものを3Dオブジェクトに貼り付けること
+    レンダーバッファーは描画内容を保存するに適しているが、再利用には適していない
+        →カラーバッファーをテクスチャに再利用できるよう、レンダーバッファーの代わりにテクスチャを使い、
+         それをフレームバッファーオブジェクトにアタッチする
+ */
+
 use std::mem;
 use std::os::raw::c_void;
 use std::path::Path;
@@ -83,10 +99,13 @@ fn main() {
         "rsc/shader/screen_shader_retro_tv.fs",
     );
 
+    // フレームバッファーのインスタンス作成
+    // ! フルスクリーンにすると元々のサイズ以上のところは黒くなっていたのはここが原因っぽい
     let frame_buffer = FrameBuffer::new(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     let vertex_vec = new_screen_vertex_vec(-1.0, -1.0, 1.0, 1.0, 20);
 
+    // 一つの頂点につき、三次元座標とテクスチャ上の二次元座標
     let screen_vertex = Vertex::new(
         (vertex_vec.len() * mem::size_of::<GLfloat>()) as GLsizeiptr,
         vertex_vec.as_ptr() as *const c_void,
@@ -253,6 +272,8 @@ fn main() {
         }
 
         unsafe {
+            // ! フレームバッファーの紐づけ
+            // ! この後の描画処理は用意したフレームバッファーに描画される
             frame_buffer.bind_as_frame_buffer();
 
             if depth_test {
@@ -330,6 +351,7 @@ fn main() {
             vertex.draw();
             gl::BindTexture(gl::TEXTURE_2D, 0);
 
+            // ! フレームバッファーの紐づけ解放
             gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
 
             if depth_test_frame {
@@ -531,10 +553,15 @@ fn main() {
 }
 
 fn new_screen_vertex_vec(
+    // 生成したい四角形の座標
     left: f32,
     top: f32,
     right: f32,
     bottom: f32,
+    // 分割数
+    // ! 分割数を1にすると三角形2個で構成された頂点データになる
+    // ! 5を指定すると三角形5o個、10を指定すると200個
+    // * 引数nの時、三角形の数: 2n^2, 頂点の数: 6n^2, floatの数18n^2
     division: i32,
 ) -> std::vec::Vec<f32> {
     let mut vertex_vec: std::vec::Vec<f32> = std::vec::Vec::new();

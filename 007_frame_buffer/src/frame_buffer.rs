@@ -13,9 +13,11 @@ impl FrameBuffer {
         let mut texture_color_buffer: u32 = 0;
 
         unsafe {
+            // FBOの生成および紐づけ
             gl::GenFramebuffers(1, &mut frame_buffer);
             gl::BindFramebuffer(gl::FRAMEBUFFER, frame_buffer);
 
+            // FBOに描画した内容を別のところに貼り付ける際には、このテクスチャを使って描画
             // init a color attachment texture
             gl::GenTextures(1, &mut texture_color_buffer);
             gl::BindTexture(gl::TEXTURE_2D, texture_color_buffer);
@@ -32,32 +34,49 @@ impl FrameBuffer {
                 gl::UNSIGNED_BYTE,
                 ptr::null(),
             );
+            // テクスチャをフレームバッファーオブジェクトにアタッチする
             gl::FramebufferTexture2D(
+                // フレームバッファーのターゲットを指定
                 gl::FRAMEBUFFER,
+                // テクスチャをどのバッファーにアタッチするか
+                // ! ここではテクスチャをカラーバッファーにアタッチしている
                 gl::COLOR_ATTACHMENT0,
+                // テクスチャのターゲット
                 gl::TEXTURE_2D,
+                // テクスチャのID
                 texture_color_buffer,
+                // ミップマップレベル 必ず0
                 0,
             );
             gl::BindTexture(gl::TEXTURE_2D, 0);
 
+            // ! デプスバッファー
             // init render buffer object
             gl::GenRenderbuffers(1, &mut render_buffer);
             gl::BindRenderbuffer(gl::RENDERBUFFER, render_buffer);
+            // 実際の保存域の確保
             gl::RenderbufferStorage(
+                // メモリ確保するターゲット
+                // ! 常にgl::RENDERBUFFER
                 gl::RENDERBUFFER,
+                // レンダーバッファーのフォーマット
                 gl::DEPTH_COMPONENT24,
+                // 幅
                 width as i32,
+                // 高さ
                 height as i32,
             );
             gl::FramebufferRenderbuffer(
                 gl::FRAMEBUFFER,
+                // レンダーバッファーをどのバッファーにアタッチするか
                 gl::DEPTH_ATTACHMENT,
+                // レンダーバッファーのターゲット
                 gl::RENDERBUFFER,
                 render_buffer,
             );
             gl::BindRenderbuffer(gl::RENDERBUFFER, 0);
 
+            // ! フレームバッファーの状態の確認
             // check frame buffer status
             if gl::CheckFramebufferStatus(gl::FRAMEBUFFER) != gl::FRAMEBUFFER_COMPLETE {
                 println!("error: frame buffer is not complete");
@@ -87,9 +106,12 @@ impl FrameBuffer {
     }
 }
 
+// C++でいうところのデストラクタ
+// Dropトレイト
 impl Drop for FrameBuffer {
     fn drop(&mut self) {
         unsafe {
+            // ヨーダ記法？
             if 0 != self.frame_buffer {
                 gl::DeleteFramebuffers(1, &self.frame_buffer);
                 self.frame_buffer = 0;
